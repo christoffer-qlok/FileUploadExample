@@ -9,11 +9,10 @@ namespace BlazorApp10.Server.Controllers
     public class FileUploadController : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> UploadFile()
+        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
         {
             try
             {
-                var file = Request.Form.Files[0];
 
                 if (file.Length > 0)
                 {
