@@ -1,0 +1,61 @@
+﻿@page "/"
+@inject HttpClient httpClient
+
+<h3>File Upload Example</h3>
+
+<form>
+    <div class="form-group">
+        <label for="fileInput">Choose File</label>
+        <InputFile id="fileInput" class="form-control" OnChange="OnFileChange" />
+    </div>
+
+    <button type="button" class="btn btn-primary" @onclick="UploadFile">Upload File</button>
+</form>
+
+@if (!string.IsNullOrEmpty(uploadMessage))
+{
+    <p>@uploadMessage</p>
+}
+
+@code {
+    private IBrowserFile file;
+    private string uploadMessage;
+
+    private async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        file = e.File;
+    }
+
+    private async Task UploadFile()
+    {
+        if (file != null)
+        {
+            try
+            {
+                // Create a FormData object to send the file to the API
+                var formData = new MultipartFormDataContent();
+                formData.Add(new StreamContent(file.OpenReadStream(512000000)), "file", file.Name);
+
+                // Send the file to the API endpoint
+                var response = await httpClient.PostAsync("api/FileUpload", formData);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    uploadMessage = $"File '{file.Name}' uploaded successfully!";
+                }
+                else
+                {
+                    uploadMessage = $"Error uploading file: {response.ReasonPhrase}";
+                }
+            }
+            catch (Exception ex)
+            {
+                uploadMessage = $"Error uploading file: {ex.Message}";
+            }
+        }
+        else
+        {
+            uploadMessage = "Please select a file to upload.";
+        }
+    }
+}
